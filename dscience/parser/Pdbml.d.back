@@ -1,0 +1,501 @@
+module dscience.biology.parser.Pdbml;
+
+private import std.xml;
+private import std.variant;
+private import std.string;
+private import Convert = std.conv : to;
+private import dscience.physic.atom.model.IAtom;
+private import dscience.core.UnknowAtomException;
+private import dscience.physic.molecule.model.IMolecule;
+private import dscience.physic.molecule.Molecule;
+private import dscience.physic.molecule.acid.amino.AminoFactory;
+private import dscience.physic.molecule.complex.Protein;
+private import dscience.physic.molecule.complex.model.IProtein;
+private import dscience.physic.bond.BondFactory;
+private import Text = tango.text.Util;
+
+/**
+ * IPDBElement is an interface for store pdbxml element.
+ * This is usefull for export code to another xml parser
+ */
+interface IPDBElement{
+@property:
+    string          namespace();
+    string          tag();
+    Variant[string] attributes();
+    IElement[]      child();
+    Variant         content();
+    string          toXML();
+}
+
+/**
+ * IPDBElement is an interface for store pdbxml element.
+ * This is usefull for export code to another xml parser
+ */
+abstract class PDBXML : IPDBElement{
+private:
+    string          _namespace;
+    string          _tag;
+    Variant[string] _attributes;
+    IPDBElement[]   _childs;
+    Variant         _content;
+public:
+    this( string namespace, string tag, Variant[string] attributes, IPDBElement[string] childs, Variant content ){
+        _namespace  = namespace;
+        _tag        = tag;
+        _attributes = attributes;
+        _childs     = childs;
+        _content    = content;
+    }
+@property:
+    string namespace(){
+        return _namespace.idup;
+    }
+    string tag(){
+        return _tag.idup;
+    }
+    Variant[string] attributes(){
+        return _attributes.idup;
+    }
+    IPDBElement[] childs(){
+        return _childs.idup;
+    }
+    Variant content(){
+        return _content;
+    }
+    string toXML(){
+        string strAttributes;
+        foreach( key, value; attributes ){
+            strAttributes += "%s=\"%s\" ".format(key, value);
+        }
+        string xml = "<%s %s>%s".format( tag, strAttributes, content );
+        foreach( element; child )
+            xml += element.toXML();
+        xml += "</%s>\n".format( tag );
+        return xml.idup;
+    }
+}
+
+class Datablock : PDBXML{
+public:
+    this(){
+
+    }
+    AtomSiteCategory            atom_siteCategory;
+    AtomSitesCategory           atom_sitesCategory;
+    AtomTypeCategory            atom_typeCategory;
+    AuditAuthorCategory         audit_authorCategory;
+    AuditConformCategory        audit_conformCategory;
+    CellCategory                cellCategory;
+    ChemCompCategory            chem_compCategory;
+    CitationCategory            citationCategory;
+    CitationAuthorCategory      citation_authorCategory;
+    ComputingCategory           computingCategory;
+    DatabaseToCategory          database_2Category;
+    DatabasePDBMatrixCategory   database_PDB_matrixCategory;
+    DatabasePDBRevCategory      database_PDB_revCategory;
+    DiffrnCategory              diffrnCategory;
+    DiffrnDetectorCategory      diffrn_detectorCategory;
+    DiffrnRadiationCategory     diffrn_radiationCategory;
+}
+
+
+struct AtomSiteCategory{
+    AtomSite[] atome_sites;
+}
+
+struct AtomSite{
+    size_t  id;             // attribute
+    double  B_iso_or_equiv;
+    double  Cartn_x;
+    double  Cartn_y;
+    double  Cartn_z;
+    char    auth_asym_id;
+    size_t  auth_seq_id;
+    string  group_PDB;
+    char    label_asym_id;
+    char    label_atom_id;
+    char    label_comp_id;
+    size_t  label_entity_id;
+    size_t  label_seq_id;
+    double  occupancy;
+    size_t  pdbx_PDB_model_num;
+    char    type_symbol;
+}
+
+struct AtomSitesCategory{
+    AtomSites[] atom_sites;
+}
+
+struct AtomSites{
+    string entry_id;        // attribute
+    double fract_transf_matrix11;
+    double fract_transf_matrix12;
+    double fract_transf_matrix13;
+    double fract_transf_matrix21;
+    double fract_transf_matrix22;
+    double fract_transf_matrix23;
+    double fract_transf_matrix31;
+    double fract_transf_matrix32;
+    double fract_transf_matrix33;
+    double fract_transf_vector1;
+    double fract_transf_vector2;
+    double fract_transf_vector3;
+}
+
+struct AtomTypeCategory{
+    AtomType[] atom_type;
+}
+
+struct AtomType{
+    char symbol;            // attribute
+}
+
+struct AuditAuthorCategory{
+    AuditAuthor[]  audit_author;
+}
+
+struct AuditAuthor{
+    size_t pdbx_ordinal;    // attribute
+}
+
+struct AuditConformCategory{
+    AuditConform[] audit_conform;
+}
+
+struct AuditConform{
+    string dict_name;       // attribute
+    string dict_version;
+    string dict_location;
+}
+
+struct CellCategory{
+    Cell[] cell;
+}
+
+struct Cell{
+    string entry_id;        // attribute
+    size_t Z_PDB;
+    size_t angle_alpha;
+    size_t angle_beta;
+    size_t angle_gamma;
+    double length_a;
+    double length_b;
+    double length_c;
+}
+
+struct ChemCompCategory{
+    ChemComp[] chem_comp;
+}
+
+struct ChemComp{
+    string  id;             // attribute
+    string  formula
+    double  formula_weight;
+    char    mon_nstd_flag;
+    string  name;
+    string  type;
+}
+
+struct CitationCategory{
+    Citation[] citation;
+}
+
+struct Citation{
+    string id;          // attribute
+    string journal_abbrev;
+    size_t journal_id_CSD;
+    string title;
+
+}
+
+struct CitationAuthorCategory{
+    CitationAuthor[] citation_author;
+}
+
+struct CitationAuthor{
+    string citation_id; // attribute
+    string name;        // attribute
+    string ordinal;     // attribute
+}
+
+struct ComputingCategory{
+    Computing[] computing;
+}
+
+struct Computing{
+    string entry_id;    // attribute
+    string data_collection;
+    string pdbx_data_reduction_ds;
+    string pdbx_data_reduction_ii;
+    string structure_refinement;
+    string structure_solution;
+}
+
+struct DatabaseToCategory{
+    DatabaseTo database_2;
+}
+
+struct DatabaseTo{
+    string database_code;   // attribute
+    string database_id;     // attribute
+}
+
+struct DatabasePDBMatrixCategory{
+    DatabasePDBMatrix[] database_PDB_matrix;
+}
+
+struct DatabasePDBMatrix{
+    string entry_id;        // attribute
+    double origx11;
+    double origx12;
+    double origx13;
+    double origx21;
+    double origx22;
+    double origx23;
+    double origx31;
+    double origx32;
+    double origx33;
+    double origx_vector1;
+    double origx_vector2;
+    double origx_vector3;
+}
+
+struct DatabasePDBRevCategory{
+    DatabasePDBRev[] database_PDB_rev;
+}
+
+struct DatabasePDBRev{
+    size_t num;         // attribute
+    string date;
+    string date_original;
+    size_t mod_type;
+    string replaces;
+}
+
+struct DiffrnCategory{
+    Diffrn[] diffrn;
+}
+
+struct Diffrn{
+    string id;          // attribute
+    string ambient_temp;
+    size_t crystal_id;
+}
+
+struct DiffrnDetectorCategory{
+    DiffrnDetector[] diffrn_detector;
+}
+
+struct DiffrnDetector{
+    string diffrn_id;       // attribute
+    string details;
+    string detector;
+    string pdbx_collection_date;
+    string type;
+}
+
+struct DiffrnRadiationCategory{
+    DiffrnRadiation[] diffrn_radiation;
+}
+
+struct DiffrnRadiation{
+    size_t diffrn_id;       // attribute
+    string monochromator;
+    string pdbx_diffrn_protocol;
+    char   pdbx_monochromatic_or_laue_m_l;
+    string pdbx_scattering_type;
+    size_t wavelength_id;
+}
+
+
+
+public class Pdbml{
+private:
+    File                    _pdbml;
+    XmlPath!(char).NodeSet  root;
+    void setCoordinateAtom(uint model, uint id, string pdbx_strand_id, uint pdb_seq_num, IMolecule molecule){
+        auto atom_siteCategory      = root.descendant("atom_siteCategory");
+        auto        atoms           = atom_siteCategory.child("atom_site").filter((XML.Node n)  {
+                                                                                                    return Convert.to!(uint)(n.query.child("pdbx_PDB_model_num").nodes[0].value) == model && Convert.to!(uint)(n.query.child("label_entity_id").nodes[0].value) == id && n.query.child("label_asym_id").nodes[0].value == pdbx_strand_id && Convert.to!(uint)(n.query.child("label_seq_id").nodes[0].value) == pdb_seq_num && (n.query.child("label_alt_id").nodes[0].value == "" || n.query.child("label_alt_id").nodes[0].value == "A");
+                                                                                                }).dup;
+        size_t C, H, O, N, S = 0;
+        foreach(atom ; atoms){
+            double  x       = Convert.to!(double)(atom.query.child("Cartn_x").nodes[0].value);
+            double  y       = Convert.to!(double)(atom.query.child("Cartn_y").nodes[0].value);
+            double  z       = Convert.to!(double)(atom.query.child("Cartn_z").nodes[0].value);
+            string  symbol  = Convert.to!(string)(atom.query.child("type_symbol").nodes[0].value);
+            switch(symbol){
+                case "C":
+                    C++;
+                    molecule.setAtomLocation(symbol, C, x, y, z);
+                    break;
+                case "H":
+                    H++;
+                    molecule.setAtomLocation(symbol, H, x, y, z);
+                    break;
+                case "O":
+                    O++;
+                    molecule.setAtomLocation(symbol, O, x, y, z);
+                    break;
+                case "N":
+                    N++;
+                    molecule.setAtomLocation(symbol, N, x, y, z);
+                    break;
+                case "S":
+                    S++;
+                    molecule.setAtomLocation(symbol, S, x, y, z);
+                    break;
+                default:
+                    throw new UnknowAtomException(symbol, __FILE__, __LINE__);
+            }
+        }
+    }
+
+    void createDisulfideBond(IMolecule[][] molecules, uint[string] strands){
+        auto struct_connCategory    = root.descendant("struct_connCategory");
+        auto struct_conn            = struct_connCategory.child("struct_conn").filter((XML.Node n)  {
+                                                                                                        return n.query.child("conn_type_id").nodes[0].value == "disulf" && (n.query.child("ptnr1_label_asym_id").nodes[0].value in strands && n.query.child("ptnr2_label_asym_id").nodes[0].value in strands);
+                                                                                                    }).dup;
+        foreach(molecule; struct_conn){
+            size_t molecule1Index       = Convert.to!(size_t)(molecule.query.child("ptnr1_label_seq_id").nodes[0].value) - 1;
+            size_t molecule2Index       = Convert.to!(size_t)(molecule.query.child("ptnr2_label_seq_id").nodes[0].value) - 1;
+            string ptnr1_label_asym_id  = molecule.query.child("ptnr1_label_asym_id").nodes[0].value;
+            string ptnr2_label_asym_id  = molecule.query.child("ptnr2_label_asym_id").nodes[0].value;
+            size_t strand1              = strands[ptnr1_label_asym_id];
+            size_t strand2              = strands[ptnr2_label_asym_id];
+            IMolecule molecule1         = molecules[strand1][molecule1Index];
+            IMolecule molecule2         = molecules[strand2][molecule2Index];
+            ICompound[] thiol1          = molecule1.getCompounds("thiol");
+            ICompound[] thiol2          = molecule2.getCompounds("thiol");
+            IAtom[] sulfur1             = thiol1[0].find("S");
+            IAtom[] sulfur2             = thiol2[0].find("S");
+            IAtom[] hydrogen1           = thiol1[0].find("H");
+            IAtom[] hydrogen2           = thiol2[0].find("H");
+            molecule1.remove(hydrogen1);
+            molecule2.remove(hydrogen2);
+            bondFactory("covalent",sulfur1[0], sulfur2[0]);
+        }
+    }
+
+public:
+    this( string fileName ){
+        _pdbml          = File (fileName);
+        // load xml document
+        string content  = cast(string)std.file.read( _pdbml );
+        // Check for well-formedness
+        check( content );
+        // create document
+        Book[] books;
+        auto xml = new DocumentParser(s);
+        doc.parse(content);
+        this.root           = doc.query[].dup;
+    }
+
+    string getCompoundName(XML.Node compound){
+        auto result = compound.query.child("name");
+        return Unicode.toLower(result.nodes[0].value.dup);
+    }
+
+    string getProteinName(uint id){
+        auto    entityCategory  = root.descendant("entityCategory");
+        auto    entity          = entityCategory.child("entity").filter((XML.Node n){
+                                                                                        return Convert.to!(uint)(n.attributes.name(null, "id").value) == id;
+                                                                                    });
+        string  name            = entity.child("pdbx_description").nodes[0].value;
+        return name;
+    }
+
+    IMolecule[] getMolecules(uint model, uint id, string asym_id){
+        auto pdbx_poly_seq_schemeCategory  = root.descendant("pdbx_poly_seq_schemeCategory");
+        auto pdbx_poly_seq_scheme          = pdbx_poly_seq_schemeCategory.child("pdbx_poly_seq_scheme").filter((XML.Node n) {
+                                                                                                                                return n.attributes.name(null, "asym_id").value == asym_id;
+                                                                                                                            }).dup;
+        IMolecule[] molecules = new IMolecule[](pdbx_poly_seq_scheme.child.count);
+
+        size_t index = 0;
+        foreach(molecule; pdbx_poly_seq_scheme){
+            string pdb_mon_id   = Unicode.toLower(molecule.query.child("pdb_mon_id").nodes[0].value);
+            uint   pdb_seq_num  = Convert.to!(uint)(molecule.query.child("pdb_seq_num").nodes[0].value);
+            molecules[index]    = aminoFactory(pdb_mon_id);
+            setCoordinateAtom(model, id, asym_id, pdb_seq_num, molecules[index]);
+            index++;
+        }
+        molecules.length = index;
+        return molecules;
+    }
+
+    IProtein getProtein(uint model, size_t entity_id, string[][]peptides ...){
+        auto struct_ref_seqCategory  = root.descendant("struct_ref_seqCategory");
+        auto struct_ref_seq          = struct_ref_seqCategory.child("struct_ref_seq").dup;
+        IMolecule[][]   molecules       = new IMolecule[][](peptides.length);
+        string          proteinName     = getProteinName(entity_id);
+
+        uint[string] strands;
+        size_t index = 0;
+        foreach(peptide; peptides){
+            foreach(chain; peptide){
+                string[]    tmp     = Text.split(chain,",");
+                uint        id      = Convert.to!(uint)(tmp[0]);
+                string      strand  = tmp[1];
+                molecules[index]    = getMolecules(model, id, strand);
+                strands[strand]     = index;
+                index++;
+            }
+        }
+        molecules.length = index;
+        createDisulfideBond(molecules, strands);
+        IProtein protein = new Protein(proteinName, molecules);
+        protein.doPeptideBond();
+        return protein;
+    }
+
+    IProtein[] getProteins(uint model){
+        auto        entity_polyCategory = root.descendant("entity_polyCategory");
+        string[][] pdbx_strand_id       = new string[][](0);
+        size_t[] entity_id              = new size_t[](0);
+        foreach(entity_poly; entity_polyCategory.child){
+            entity_id ~= Convert.to!(size_t)(entity_poly.attributes.name(null, "entity_id").value);
+            pdbx_strand_id~= Text.split(entity_poly.query.child("pdbx_strand_id").nodes[0].value,",");
+        }
+        IProtein[]  proteins            = new IProtein[](pdbx_strand_id.length);
+        /**
+         *  entity  strand
+         *  [i]     [k]
+         *  [0]     [0] => A
+         *  [0]     [1] => C
+         *  [1]     [0] => B
+         *  [0]     [1] => D
+         * peptide1 = [0][0]+[1][0]
+         * peptide2 = [0][1]+[1][1]
+         * peptide 1 2 is same peptide ie same entity: A = C and B = D
+         */
+        for(size_t j = 0; j < pdbx_strand_id.length; j++){
+            size_t i = 0;
+            string[][] peptides = new string[][](entity_id.length);
+            // register all peptide need for protein
+            while( i < entity_id.length-1){
+                peptides[i] ~= Convert.to!(string)(i+1)~","~pdbx_strand_id[i][j]; // ie entity 1 strand A -> 1,A
+                i++;
+                peptides[i] ~= Convert.to!(string)(i+1)~","~pdbx_strand_id[i][j];
+                proteins[j]  = getProtein(model, entity_id[i], peptides);
+            }
+            i = 0;
+        }
+        return proteins;
+    }
+
+    /**
+     * Return a list of chemical compound found in file
+     */
+    string[] getChemicalCompound(){
+        auto        compounds   = root.descendant("chem_compCategory");
+        string[]    result      = new string[](compounds.child.count);
+        size_t index = 0;
+        foreach(compound ; compounds.child){
+            result[index] = getCompoundName(compound);
+            index++;
+        }
+        return result;
+    }
+}

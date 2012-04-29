@@ -1,0 +1,10 @@
+# project dscience (0.0.1) configured on Thu Mar 22 02:30:02 2012 by
+# waf 1.6.11 (abi 98, python 20702f0 on linux2)
+# using ./waf configure --prefix=/usr
+#
+----------------------------------------
+Setting top to
+/home/jonathan/Projets/dscience/dscience
+----------------------------------------
+Setting out to
+/home/jonathan/Projets/dscience/build

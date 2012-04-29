@@ -1,0 +1,258 @@
+module dscience.parser.xml;
+
+import std.string;
+import std.variant;
+import std.algorithm;
+import std.array;
+import std.ascii;
+import std.encoding;
+import std.exception;
+
+enum string         commentStart        = "<!--";
+enum string         commentEnd          = "-->";
+enum string         escapeStart         = "<![CDATA[";
+enum string         escapeEnd           = "]]>";
+enum string         invalidChar         = " !\"#$%&'()*+,/;<=>?@[\]^`{|}";  // invalid character in element name
+enum string         invalidStartChar    = "-.0123456789";                   // invalid start character in element name
+enum string[char]   predefinedEntities  = ['<':"&lt;", '>':"&gt;", '&':"&amp;", '\'':"&apos;", '"':"&quot;"];
+enum string         xmlDdeclarationStart= "<?xml";
+enum string         xmlDdeclarationEnd  = "?>";
+enum char           startTag            = '<';
+enum char           EndTag              = '>';
+enum string         EmptyTag            = '/>';
+
+struct Attribute{
+    string  spaceName;
+    string  key;
+    Variant value;
+
+    this( string spaceName, string key, Variant value ){
+        this.spaceName  = spaceName;
+        this.key        = key;
+        this.value      = value;
+    }
+
+    string toString(){
+        return ( spaceName.empty ) ? "%s=\"%s\"".format(key, value) : "%s:%s=\"%s\"".format(spaceName, key, value);
+    }
+}
+
+struct Element{
+    private:
+        string          _spaceName;
+        string          _name;
+        Attribute[]     _attributes;
+        Element[]       _childs;
+        size_t          _level;
+        size_t          _length;
+        string          _cdata;
+
+    public:
+        size_t          level;
+
+        this( string name, ref Attribute[] attributes, ref Element[] childs, string spaceName = ""){
+            _attributes = attributes;
+            _childs     = childs;
+            this(name, spaceName);
+        }
+
+        this( string name, ref Attribute[] attributes, string spaceName = ""){
+            _attributes = attributes;
+            this(name, spaceName);
+        }
+
+        this( string name, ref Element[] childs, string spaceName = ""){
+            _childs     = childs;
+            this(name, spaceName);
+        }
+
+        this( string name, string spaceName = ""){
+            _name       = name;
+            _spaceName  = spaceName;
+            _length     = childs.length;
+        }
+
+        void popFront(){
+            assert( _childs.length, "Attempting to fetch the front of an empty array of " ~ typeof(_childs[0]).stringof );
+            _childs[1..$];
+        }
+        void popBack(){
+            assert( _childs.length, "Attempting to fetch the front of an empty array of " ~ typeof(_childs[0]).stringof );
+            _childs = _childs[0 .. $ - 1];
+        }
+
+        int opApply( int delegate(Element) dg ){
+            int result = 0;
+            foreach( item; _childs )
+                result = dg( item );
+            return result;
+        }
+
+        int opApply( int delegate(size_t, Element) dg ){
+            int result = 0;
+            foreach( size_t counter, item; _childs )
+                result = dg(counter, item );
+            return result;
+        }
+
+        Element opIndex(size_t n){
+            assert(n < length);
+            return _childs[n];
+        }
+
+        void opIndexAssign(ref Element value, size_t n){
+            assert(n < length);
+            _childs[n] = value;
+        }
+
+        /**
+         * put
+         * Append one or more elements as child to current Element. For save time childs array are greater ans real
+         * number of child. For this reason shrink is enable by default, if you want save time. You can manually shrink
+         * once time you have end to put some elements.         *
+         */
+        void put( ref Element[] values..., bool autoShrink = true ){
+            foreach( counter, value; values){
+                size_t index = _length + counter;
+                if( _length + counter >= _childs.length )
+                    _childs.length = _childs.length + 50;
+                value.level = this.level + 1;
+                _childs[ index ] = value;
+                _length++;
+            }
+            if( autoShrink ) shrink();
+        }
+
+        @property:
+            bool empty(){
+                return _childs.length == 0;
+            }
+
+            ref Element front(){
+                assert( _childs.length, "Attempting to fetch the front of an empty array of " ~ typeof(_childs[0]).stringof );
+                return _childs[0];
+            }
+
+            ref Element back(){
+                assert( _childs.length, "Attempting to fetch the front of an empty array of " ~ typeof(_childs[0]).stringof );
+                return _childs[ $ - 1 ];
+            }
+
+            Element save(){
+                return this;
+            }
+
+            size_t length() const{
+                return _length;
+            }
+
+            Element[] data(){
+                return _childs;
+            }
+
+            void shrink(){
+                _childs.length = _childs_childs;
+            }
+
+}
+
+string cdataReader( ref sring cdata ){
+    size_t start line.indexOf( escapeStart );
+    string result;
+    if( start != -1 ){
+
+    }
+    return result;
+}
+
+
+/**
+ * tagReader
+ * Use this function for read tage formatted as:
+ *   < spaceName:tagName spaceName:attributeName="value" >
+ *   < spaceName:tagName attributeName="value" />
+ *   < tagName attributeName="value" >
+ * And others ...
+ *
+ * Params:
+ * string tag the line given is consumed until reach end of tag or end of line
+ *
+ * Returns:
+ * An element struct
+ */
+Element tagReader( ref string tag ){
+    size_t start line.indexOf( startTag );
+    Element result;
+
+    if( start != -1 ){
+        bool    isRunning   = true;
+        while( isRunning ){
+            if( line.empty || line[0] == EndTag)    // stop to read if we reach end of line or end of tag
+                isRunning = false;
+            else if(line[0..4] == commentStart)     // skip comment
+                findSkip(line, commentEnd)
+            else if( findSkip(line, whitespace) )   // skip whitepsace
+                continue;
+            else if( canFind(letters), line[0] ){
+
+            }
+            else if( canFind(invalidChar), line[0] || invalidStartChar ){
+
+            }
+            else
+                throw new Exception( "Unknown: %s".format(line) );
+        }
+    }
+    return result;
+}
+
+/**
+ * Load a xml file in memory
+ */
+Element xmlReader( string fileName ){
+    File xmlFile = File( ouputPath, "r");
+    scope(exit) xmlFile.close();
+
+    Element root;
+    Element currentRoot;
+
+    string spaceName= "";
+    string name     = "";
+
+
+    char[] buffer;
+    char[] bufferNotConsumed;
+
+
+    while( xmlFile.readln(buffer) ){
+        if( buffer.empty )                                              // stop to read buffer is empty
+            continue;
+        else{
+            buffer = bufferNotConsumed ~ buffer;                        // put back previous buffer not consumed
+            bufferNotConsumed = "";                                     // set to empty previous buffer
+            findSkip(buffer, whitespace);                               // skip whitepsace
+            if( buffer.length > 4 &&  buffer[0..4] == commentStart ){   // skip comment
+                if( canFind(buffer, commentEnd);
+                    findSkip(buffer, commentEnd);
+                else
+                    bufferNotConsumed = buffer.dup  ;                   // store buffer not consumed for next loop
+            }
+        }
+
+    }
+
+    return root;
+}
+
+Element xmlDdeclaration( string fileName ){
+    File xmlFile = File(fileName, "r");
+
+}
+
+private:
+enum State{
+    comment     ,
+    cdata       ,
+    name        ,
+    attribute
+}

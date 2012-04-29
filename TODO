@@ -1,0 +1,11 @@
+TODO LIST:
+- search if they are a better way for ut a 3 D location an atom, a molecule ... 
+- add biological tool as: blast, neighbour joining ...
+- add in a directory some example of use
+- Works on Saccharide and his structure in some environnment like watery
+
+- add MatrixFactory (blosum, pam, etc etc) (load matrix by xml ?)
+- add abstract class NetworkParser, MoleculParser et SequenceParser to
+   parse pdb, metatool and fasta file for example. (metatool parser alreayd exist and need to herit from this abstract class)
+
+- DOCUMENTE THE CODE !!!!!!!!

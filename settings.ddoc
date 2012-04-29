@@ -1,0 +1,6 @@
+PROJECTNAME  = dscience
+LINKPREFIX   = -L
+REPOSRCDIR   = https://gitorious.org/dscience/dscience
+ROOT         = /usr/share/doc/dscience/cute_doc
+LOGOSRC      = https://s3.amazonaws.com/cloud.ohloh.net/attachments/51259/dscience_med.png
+LOGOALT      = dscience

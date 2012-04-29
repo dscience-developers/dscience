@@ -1,0 +1,10 @@
+track name="User Track" description="User Supplied Track" color="0,0,0" itemRgb="Off" colorByStrand="0,0,0 0,0,0" group="user" priority="user"
+GL192437.1	dsience	CDS	24110	24278	0	-	1	gene_id "ENSAMEG00000006897"; transcript_id "ENSAMET00000007606"; exon_number "11"; gene_name "D2H1Z4_AILME"; gene_biotype "protein_coding"; protein_id "ENSAMEP00000007299";
+track name="User Track" description="User Supplied Track" color="0,0,0" itemRgb="Off" colorByStrand="0,0,0 0,0,0" group="user" priority="user"
+GL192437.1	dsience	CDS	24110	24278	0	-	1	gene_id "ENSAMEG00000006897"; transcript_id "ENSAMET00000007606"; exon_number "11"; gene_name "D2H1Z4_AILME"; gene_biotype "protein_coding"; protein_id "ENSAMEP00000007299";
+track name="User Track" description="User Supplied Track" color="0,0,0" itemRgb="Off" colorByStrand="0,0,0 0,0,0" group="user" priority="user"
+GL192437.1	dsience	CDS	24110	24278	0	-	1	gene_id "ENSAMEG00000006897"; transcript_id "ENSAMET00000007606"; exon_number "11"; gene_name "D2H1Z4_AILME"; gene_biotype "protein_coding"; protein_id "ENSAMEP00000007299";
+track name="User Track" description="User Supplied Track" color="0,0,0" itemRgb="Off" colorByStrand="0,0,0 0,0,0" group="user" priority="user"
+GL192437.1	dsience	CDS	24110	24278	0	-	1	gene_id "ENSAMEG00000006897"; transcript_id "ENSAMET00000007606"; exon_number "11"; gene_name "D2H1Z4_AILME"; gene_biotype "protein_coding"; protein_id "ENSAMEP00000007299";
+track name="User Track" description="User Supplied Track" color="0,0,0" itemRgb="Off" colorByStrand="0,0,0 0,0,0" group="user" priority="user"
+GL192437.1	dsience	CDS	24110	24278	0	-	-47	gene_id "ENSAMEG00000006897"; transcript_id "ENSAMET00000007606"; exon_number "11"; gene_name "D2H1Z4_AILME"; gene_biotype "protein_coding"; protein_id "ENSAMEP00000007299";

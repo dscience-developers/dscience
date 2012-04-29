@@ -1,0 +1,20 @@
+browser position chr7:127471196-127495720
+browser hide all
+track name="ColorByStrandDemo" description="Color by strand demonstration" visibility=2 colorByStrand="255,0,0 0,0,255"
+chr7	127471196	127472363	Pos1	0	+
+chr7	127472363	127473530	Pos2	0	+
+chr7	127473530	127474697	Pos3	0	+
+chr7	127474697	127475864	Pos4	0	+
+chr7	127475864	127477031	Neg1	0	-
+chr7	127477031	127478198	Neg2	0	-
+chr7	127478198	127479365	Neg3	0	-
+chr7	127479365	127480532	Pos5	0	+
+chr7	127480532	127481699	Neg4	0	-
+track name=spacer description="Blue ticks every 10000 bases" color="0,0,255"
+chr22	20100000	20100001	blah	0	+
+chr22	20110000	20110001	blah	0	+
+chr22	20120000	20120001	blah	0	+
+track name=even description="Red ticks every 100 bases, skip 100" color="255,0,0"
+chr22	20100000	20100100	first	0	-
+chr22	20100200	20100300	second	0	-
+chr22	20100400	20100500	third	0	-
